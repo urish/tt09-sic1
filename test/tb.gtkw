@@ -1,25 +1,25 @@
 [*]
-[*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
-[*] Mon Nov 20 16:00:28 2023
+[*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
+[*] Sat Nov  9 19:07:49 2024
 [*]
-[dumpfile] "/home/uri/p/tt-new-template-proto/test/tb.vcd"
-[dumpfile_mtime] "Mon Nov 20 15:58:34 2023"
-[dumpfile_size] 1110
-[savefile] "/home/uri/p/tt-new-template-proto/test/tb.gtkw"
+[dumpfile] "/home/uri/p/tt09-sic/test/tb.vcd"
+[dumpfile_mtime] "Sat Nov  9 18:57:03 2024"
+[dumpfile_size] 4650
+[savefile] "/home/uri/p/tt09-sic/test/tb.gtkw"
 [timestart] 0
-[size] 1376 600
+[size] 1908 1047
 [pos] -1 -1
-*-24.534533 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-25.691153 293900000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
+[treeopen] tb.user_project.
 [sst_width] 297
 [signals_width] 230
 [sst_expanded] 1
-[sst_vpaned_height] 158
+[sst_vpaned_height] 322
 @28
 tb.user_project.ena
-@29
 tb.user_project.clk
-@28
+tb.user_project.mem.clk
 tb.user_project.rst_n
 @200
 -Inputs
@@ -35,5 +35,41 @@ tb.user_project.uio_out[7:0]
 -Output Pins
 @22
 tb.user_project.uo_out[7:0]
+@200
+-
+@800200
+-Memory
+@22
+tb.user_project.mem.addr[7:0]
+tb.user_project.mem.data_in[7:0]
+@28
+tb.user_project.mem.wr_en
+@22
+tb.user_project.mem.data_out[7:0]
+@1000200
+-Memory
+@200
+-
+@800200
+-CPU
+@28
+tb.user_project.run
+tb.user_project.set_pc
+@29
+tb.user_project.set_data
+@820
+tb.user_project.state_name[63:0]
+@22
+tb.user_project.PC[7:0]
+tb.user_project.A[7:0]
+tb.user_project.B[7:0]
+tb.user_project.C[7:0]
+tb.user_project.mem_A[7:0]
+tb.user_project.mem_B[7:0]
+tb.user_project.mem_data_in[7:0]
+tb.user_project.mem.ui_in[7:0]
+tb.user_project.mem.uo_out[7:0]
+@1000200
+-CPU
 [pattern_trace] 1
 [pattern_trace] 0
