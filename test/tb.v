@@ -27,6 +27,8 @@ module tb ();
   wire VGND = 1'b0;
 `endif
 
+  wire halted = uio_oe[1] & uio_out[1];
+
   // Replace tt_um_example with your module name:
   tt_um_urish_sic1 user_project (
 

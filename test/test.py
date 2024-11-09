@@ -3,7 +3,7 @@
 
 import cocotb
 from cocotb.clock import Clock
-from cocotb.triggers import ClockCycles
+from cocotb.triggers import ClockCycles, RisingEdge
 from typing import List
 
 ADDR_IN = 253
@@ -63,6 +63,14 @@ class SIC1Driver:
         # An extra clock cycle for outputs to stablize:
         await ClockCycles(self.dut.clk, 1)
 
+    async def run(self):
+        self.dut.uio_in.value = UIO_RUN
+        await ClockCycles(self.dut.clk, 1)
+        await RisingEdge(self.dut.halted)
+        self.dut.uio_in.value = 0
+        # An extra clock cycle for outputs to stablize:
+        await ClockCycles(self.dut.clk, 1)
+
 
 @cocotb.test()
 async def test_basic_io(dut):
@@ -78,3 +86,22 @@ async def test_basic_io(dut):
     await sic1.step()
     assert dut.uo_out.value.signed_integer == -15
 
+
+@cocotb.test()
+async def test_branching(dut):
+    sic1 = SIC1Driver(dut)
+    await sic1.reset()
+
+    # fmt: off
+    await sic1.write_mem_bytes(0x0, [
+        0x00, 0x00, 0x06,  # PC <- 6
+        0xfe, 0x00, 0x00,  # OUT <- 0xff, PC <- 0
+        0xfe, 0x09, 0x00,  # OUT <- 0x1
+        0xff, 0xff, 0xff  # data for previous instruction + HALT
+    ])
+    # fmt: on
+
+    await sic1.set_pc(0x00)
+    await sic1.run()
+
+    assert dut.uo_out.value.signed_integer == 0x01

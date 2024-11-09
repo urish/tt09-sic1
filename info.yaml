@@ -44,7 +44,7 @@ pinout:
 
   # Bidirectional pins
   uio[0]: "run"
-  uio[1]: ""
+  uio[1]: "halted"
   uio[2]: "set_pc"
   uio[3]: "load_data"
   uio[4]: ""

@@ -24,22 +24,23 @@ module tt_um_urish_sic1 (
   localparam STATE_READ_MEM_B = 3'd5;
   localparam STATE_STORE_RESULT = 3'd6;
 
-
-  assign uio_out = 0;
-  assign uio_oe  = 0;
-
   reg [2:0] state;
   reg [7:0] PC;
   reg [7:0] mem_addr;
   reg mem_wr_en;
   reg [7:0] mem_data_in;
   wire [7:0] mem_data_out;
+  reg prev_run;
 
   reg [7:0] A;
   reg [7:0] B;
   reg [7:0] C;
   reg [7:0] mem_A;
   wire [7:0] next_PC = (mem_data_in == 0 || mem_data_in[7]) ? C : PC + 3;
+
+  wire halted = state == STATE_HALT;
+  assign uio_out = {6'b0, halted, 1'b0};
+  assign uio_oe  = 8'b00000010;
 
   // Debug stuff
   reg [63:0] state_name;
@@ -82,8 +83,10 @@ module tt_um_urish_sic1 (
       B <= 8'h00;
       C <= 8'h00;
       mem_A <= 8'h00;
+      prev_run <= 1'b0;
     end else begin
       mem_wr_en <= 1'b0;
+      prev_run <= run;
 
       case (state)
         STATE_HALT: begin
@@ -96,7 +99,7 @@ module tt_um_urish_sic1 (
           if (set_pc) begin
             PC <= ui_in;
           end
-          if (run && PC <= 8'd252) begin
+          if (run && !prev_run && PC <= 8'd252) begin
             mem_addr <= PC;
             state <= STATE_READ_A;
           end
