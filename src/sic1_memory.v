@@ -27,14 +27,14 @@ module sic1_memory (
 
   always @(posedge clk) begin
     if (~rst_n) begin
-      uo_out   <= 8'h00;
+      uo_out <= 8'h00;
     end else if (wr_en) begin
-        if (is_ram_addr) begin
-          mem[addr] <= data_in;
-        end else if (addr == ADDR_OUT) begin
-          uo_out <= data_in;
-        end
+      if (is_ram_addr) begin
+        mem[addr] <= data_in;
+      end else if (addr == ADDR_OUT) begin
+        uo_out <= data_in;
       end
+    end
   end
 
 endmodule

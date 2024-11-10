@@ -86,7 +86,7 @@ module tt_um_urish_sic1 (
       prev_run <= 1'b0;
     end else begin
       mem_wr_en <= 1'b0;
-      prev_run <= run;
+      prev_run  <= run;
 
       case (state)
         STATE_HALT: begin
