@@ -25,6 +25,29 @@ Each instruction is 3 bytes long, and the program counter is incremented by 3 af
 
 For more information, check out the [SIC-1 Assembly Language Reference](https://github.com/jaredkrinke/sic1/blob/master/sic1-assembly.md).
 
-## How to test
+The `uio` pins are used to load a program into the computer, and to control the computer:
 
-Programming & testing instructions will be added later.
+| uio pin | Name       | Type   | Description                                               |
+|---------|------------|--------|-----------------------------------------------------------|
+| 0       | run        | input  | Start the computer                                        |
+| 1       | halted     | output | Computer has halted                                       |
+| 2       | set_pc     | input  | Set the program counter to the value on ui pins           |
+| 3       | load_data  | input  | Load the value from the ui pins into the memory at the PC |
+| 4       | out_strobe | output | Output (uo pins) was updated by the computer              |
+
+## Programming the SIC-1
+
+You can use the [https://jaredkrinke.itch.io/sic-1](online SIC-1 app) to compile and simulate your SIC-1 programs. Click on "Run game" and then "Apply for the job", close the "Electronic mail" popup. Paste the code and click on "Compile" (on the bottom left). You'll see the compiled code in the "Memory" window on the right, and will be able to step through the code.
+
+To load a program and run a program, follow this sequence:
+
+1. Set the `ui` pins to 0 (target address)
+2. Pulse the the `load_pc` pin
+3. Set the `ui` pins to the value you want to load
+4. Pulse the `load_data` pin
+5. Repeat steps 3-4 until you have loaded the entire program
+6. Set the `ui` pins to the address you want to start at (usually 0)
+7. Pulse the `set_pc` pin
+8. Set the `run` pin to 1. The computer will start running the program, and the `halted` pin will go high when the program is done.
+
+If you want to step through the program, you can pulse the `run` pin to advance one instruction at a time.
