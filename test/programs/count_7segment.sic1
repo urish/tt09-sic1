@@ -1,0 +1,45 @@
+; Counts from 0 to F on Tiny Tapeout's 7-segment display
+
+@start:      subleq @tmp, @string_ptr
+             subleq @pointer, @pointer
+             subleq @pointer, @tmp
+             subleq @tmp, @tmp
+@loop:       subleq @tmp, @pointer
+             subleq @print_ch+1, @print_ch+1
+             subleq @print_ch+1, @tmp
+             subleq @check_nullterm, @check_nullterm
+             subleq @check_nullterm, @tmp
+             subleq @tmp, @tmp
+@check_nullterm:
+             subleq @tmp, @zero, @start      ; First operand will be replaced by instructions above
+@print_ch:
+             subleq @tmp, 0                  ; Second operand will be replaced by instructions above
+             subleq @OUT, @tmp
+             subleq @pointer, @one
+             subleq @tmp, @tmp, @loop
+
+@tmp:        .data 0
+@pointer:    .data 0
+@zero:       .data 0
+@one:        .data -1
+
+; The 7-segment display encoding for the digits 0 to F:
+@string:     .data 63   ; 0
+             .data 6    ; 1
+             .data 91   ; 2
+             .data 79   ; 3
+             .data 102  ; 4
+             .data 109  ; 5
+             .data 125  ; 6
+             .data 7    ; 7
+             .data 127  ; 8
+             .data 111  ; 9
+             .data 119  ; A
+             .data 124  ; B
+             .data 57   ; C
+             .data 94   ; D
+             .data 121  ; E
+             .data 113  ; F
+             .data 0    ; null
+
+@string_ptr: .data @string
