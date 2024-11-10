@@ -58,13 +58,34 @@ The pseudocode for the execution cycle is as follows:
 
 The `uio` pins are used to load a program into the computer, and to control the computer:
 
-| uio pin | Name       | Type   | Description                                                           |
-|---------|------------|--------|-----------------------------------------------------------------------|
-| 0       | run        | input  | Start the computer                                                    |
-| 1       | halted     | output | Computer has halted                                                   |
-| 2       | set_pc     | input  | Set the program counter to the value on ui pins                       |
-| 3       | load_data  | input  | Load the value from the ui pins into the memory at the PC             |
-| 4       | out_strobe | output | Pulsed for one clock cycle when the computer writes to @OUT (uo pins) |
+| uio pin | Name       | Type   | Description                                                             |
+|---------|------------|--------|-------------------------------------------------------------------------|
+| 0       | run        | input  | Start the computer                                                      |
+| 1       | halted     | output | Computer has halted                                                     |
+| 2       | set_pc     | input  | Set the program counter to the value on ui pins                         |
+| 3       | load_data  | input  | Load the value from the ui pins into the memory at the PC               |
+| 4       | out_strobe | output | Pulsed for one clock cycle when the computer writes to @OUT (`uo` pins) |
+| 5       | dbg[0]     | output | Debug select bit 0                                                      |
+| 6       | dbg[1]     | output | Debug select bit 1                                                      |
+| 7       | dbg[2]     | output | Debug select bit 2                                                      |
+
+### Debug interface
+
+The `dbg` pins are used to expose internal signals for debugging on the `uo` pins. When the `dbg` pins are set to 0, the `uo` pins will output the @OUT value. For other values of `dbg`, the `uo` pins will output the following signals:
+
+| dbg[2:0] | Signal               |
+|----------|----------------------|
+| 0        | None                 |
+| 1        | PC                   |
+| 2        | A                    |
+| 3        | B                    |
+| 4        | C                    |
+| 5        | valA                 |
+| 6        | result (valA - valB) |
+| 7        | state (3 bits )      |
+
+
+The `state` signal is a 3-bit value that represents the current state of the computer, corresponding to the execution cycle stages described above (1-6), and a 3-bit value of 0 when the computer is halted.
 
 ## Programming the SIC-1
 
