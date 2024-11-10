@@ -1,0 +1,23 @@
+; Prints "Hello, Tiny Tapeout!" to the output
+
+@loop:       subleq @tmp, @pointer
+             subleq @print_ch+1, @print_ch+1
+             subleq @print_ch+1, @tmp
+             subleq @check_nullterm, @check_nullterm
+             subleq @check_nullterm, @tmp
+             subleq @tmp, @tmp
+@check_nullterm:
+             subleq @tmp, @zero, @HALT       ; First operand will be replaced by instructions above
+@print_ch:
+             subleq @tmp, 0                  ; Second operand will be replaced by instructions above
+             subleq @OUT, @tmp
+
+             subleq @pointer, @one
+             subleq @tmp, @tmp, @loop
+
+@tmp:        .data 0
+@pointer:    .data @string
+@zero:       .data 0
+@one:        .data -1
+
+@string:     .data "Hello, Tiny Tapeout!", 0

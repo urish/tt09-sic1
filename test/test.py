@@ -15,6 +15,28 @@ UIO_SET_PC = 1 << 2
 UIO_LOAD_DATA = 1 << 3
 
 
+class OutputMonitor:
+    def __init__(self, dut):
+        self.dut = dut
+        self.queue = []
+        self._monitor = cocotb.fork(self._run())
+
+    async def _run(self):
+        while True:
+            await RisingEdge(self.dut.out_strobe)
+            if self.dut.uo_out.value.integer != 0:
+                self.queue.append(self.dut.uo_out.value.integer)
+
+    def get(self):
+        return self.queue
+
+    def get_string(self):
+        return "".join([chr(c) for c in self.queue])
+
+    def clear(self):
+        self.queue = []
+
+
 class SIC1Driver:
     def __init__(self, dut):
         self.dut = dut
@@ -22,6 +44,8 @@ class SIC1Driver:
         # Set the clock period to 10 us (100 KHz)
         self.clock = Clock(dut.clk, 10, units="us")
         cocotb.start_soon(self.clock.start())
+
+        self.output = OutputMonitor(dut)
 
     async def reset(self):
         self.dut._log.info("Reset")
@@ -105,3 +129,25 @@ async def test_branching(dut):
     await sic1.run()
 
     assert dut.uo_out.value.signed_integer == 0x01
+
+
+@cocotb.test()
+async def test_print_tinytapeout(dut):
+    sic1 = SIC1Driver(dut)
+    await sic1.reset()
+
+    # fmt: off
+    # Source: programs/print_hello_tinytapeout.asm
+    await sic1.write_mem_bytes(0x0, [
+        0x21, 0x22, 0x03, 0x16, 0x16, 0x06, 0x16, 0x21, 0x09, 0x12, 0x12, 0x0c, 0x12, 0x21, 0x0f, 0x21, 
+        0x21, 0x12, 0x21, 0x23, 0xff, 0x21, 0x00, 0x18, 0xfe, 0x21, 0x1b, 0x22, 0x24, 0x1e, 0x21, 0x21,
+        0x00, 0x00, 0x25, 0x00, 0xff, 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x2c, 0x20, 0x54, 0x69, 0x6e, 0x79,
+        0x20, 0x54, 0x61, 0x70, 0x65, 0x6f, 0x75, 0x74, 0x21, 0x00
+    ])
+    # fmt: on
+
+    await sic1.set_pc(0x00)
+    await sic1.run()
+
+    dut._log.info(f"Program output: {sic1.output.get_string()}")
+    assert sic1.output.get_string() == "Hello, Tiny Tapeout!"
