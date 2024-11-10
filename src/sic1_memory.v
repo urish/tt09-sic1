@@ -13,7 +13,8 @@ module sic1_memory (
     input wire [7:0] data_in,
     output wire [7:0] data_out,
     input wire [7:0] ui_in,
-    output reg [7:0] uo_out
+    output reg [7:0] uo_out,
+    output reg out_strobe
 );
   parameter ADDR_MAX = 8'd252;
   parameter ADDR_IN = 8'd253;
@@ -28,11 +29,14 @@ module sic1_memory (
   always @(posedge clk) begin
     if (~rst_n) begin
       uo_out <= 8'h00;
+      out_strobe <= 1'b0;
     end else if (wr_en) begin
+      out_strobe <= 1'b0;
       if (is_ram_addr) begin
         mem[addr] <= data_in;
       end else if (addr == ADDR_OUT) begin
         uo_out <= data_in;
+        out_strobe <= 1'b1;
       end
     end
   end

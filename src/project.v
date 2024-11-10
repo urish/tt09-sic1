@@ -39,8 +39,9 @@ module tt_um_urish_sic1 (
   wire [7:0] next_PC = (mem_data_in == 0 || mem_data_in[7]) ? C : PC + 3;
 
   wire halted = state == STATE_HALT;
-  assign uio_out = {6'b0, halted, 1'b0};
-  assign uio_oe  = 8'b00000010;
+  wire out_strobe;
+  assign uio_out = {3'b0, out_strobe, 2'b0, halted, 1'b0};
+  assign uio_oe  = 8'b00010010;
 
   // Debug stuff
   reg [63:0] state_name;
@@ -65,7 +66,8 @@ module tt_um_urish_sic1 (
       .data_in(mem_data_in),
       .data_out(mem_data_out),
       .ui_in(ui_in),
-      .uo_out(uo_out)
+      .uo_out(uo_out),
+      .out_strobe(out_strobe)
   );
 
   wire run = uio_in[0];

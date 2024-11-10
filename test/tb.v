@@ -28,6 +28,7 @@ module tb ();
 `endif
 
   wire halted = uio_oe[1] & uio_out[1];
+  wire out_strobe = uio_oe[4] & ~uio_out[4];
 
   // Replace tt_um_example with your module name:
   tt_um_urish_sic1 user_project (
