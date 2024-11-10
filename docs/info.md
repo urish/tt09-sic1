@@ -11,7 +11,9 @@ You can also include images in this folder and reference them in the markdown. E
 
 SIC-1 is an 8-bit Single Instruction computer. The only instruction it supports is SUBLEQ: Subtract and Branch if Less than or Equal to Zero. The instruction has three operands: A, B, and C. The instruction subtracts the value at address B from the value at address A and stores the result at address A. If the result is less than or equal to zero, the instruction jumps to address C. Otherwise, it proceeds to the next instruction.
 
-The SIC-1 computer has an address space of 256 bytes, and and 8-bit program counter. The first 253 bytes are used for program memory, and the last 3 bytes are used for input, output, and for halting the computer:
+### Memory map
+
+The SIC-1 computer has an address space of 256 bytes, and and 8-bit program counter. The first 253 bytes are used for the program memory, and the last 3 bytes are used for input, output, and for halting the computer:
 
 | Address | Label | Read      | Write     |
 |---------|-------|-----------|-----------|
@@ -25,15 +27,44 @@ Each instruction is 3 bytes long, and the program counter is incremented by 3 af
 
 For more information, check out the [SIC-1 Assembly Language Reference](https://github.com/jaredkrinke/sic1/blob/master/sic1-assembly.md).
 
+### Execution cycle
+
+Each instruction takes 6 cycles to execute, regardless of whether a branch is taken or not. The execution of an instruction is divided into the following stages:
+
+1. Fetch A: Read the value at address PC
+2. Fetch B: Read the value at address PC+1
+3. Fetch C: Read the value at address PC+2
+4. Read valA: Read the value at address A
+5. Read valB: Read the value at address B
+6. Store: Subtract valB from valA, store the result at A, and branch if the result is less than or equal to zero.
+
+The pseudocode for the execution cycle is as follows:
+
+```
+(1) A <= memory[PC]
+(2) B <= memory[PC+1]
+(3) C <= memory[PC+2]
+(4) valA <= memory[A]
+(5) valB <= memory[B]
+(6) result <= valA - valB
+    memory[A] <= result
+    if result <= 0:
+      PC = C
+    else:
+      PC = PC + 3
+```
+
+### Control signals
+
 The `uio` pins are used to load a program into the computer, and to control the computer:
 
-| uio pin | Name       | Type   | Description                                               |
-|---------|------------|--------|-----------------------------------------------------------|
-| 0       | run        | input  | Start the computer                                        |
-| 1       | halted     | output | Computer has halted                                       |
-| 2       | set_pc     | input  | Set the program counter to the value on ui pins           |
-| 3       | load_data  | input  | Load the value from the ui pins into the memory at the PC |
-| 4       | out_strobe | output | Output (uo pins) was updated by the computer              |
+| uio pin | Name       | Type   | Description                                                           |
+|---------|------------|--------|-----------------------------------------------------------------------|
+| 0       | run        | input  | Start the computer                                                    |
+| 1       | halted     | output | Computer has halted                                                   |
+| 2       | set_pc     | input  | Set the program counter to the value on ui pins                       |
+| 3       | load_data  | input  | Load the value from the ui pins into the memory at the PC             |
+| 4       | out_strobe | output | Pulsed for one clock cycle when the computer writes to @OUT (uo pins) |
 
 ## Programming the SIC-1
 
