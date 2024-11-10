@@ -3,7 +3,7 @@
 
 import cocotb
 from cocotb.clock import Clock
-from cocotb.triggers import ClockCycles, RisingEdge
+from cocotb.triggers import ClockCycles, RisingEdge, Timer
 from typing import List
 
 ADDR_IN = 253
@@ -13,6 +13,15 @@ ADDR_HALT = 255
 UIO_RUN = 1 << 0
 UIO_SET_PC = 1 << 2
 UIO_LOAD_DATA = 1 << 3
+
+REG_NONE = 0
+REG_PC = 1
+REG_A = 2
+REG_B = 3
+REG_C = 4
+REG_MEM_A = 5
+REG_RESULT = 6
+REG_STATE = 7
 
 
 class OutputMonitor:
@@ -95,6 +104,18 @@ class SIC1Driver:
         # An extra clock cycle for outputs to stablize:
         await ClockCycles(self.dut.clk, 1)
 
+    async def debug_read_reg(self, register: int, signed=False):
+        old_uio = self.dut.uio_in.value
+        self.dut.uio_in.value = register << 5
+        await Timer(50, 'ns') # Wait for the value to be propagated
+        result = (
+            self.dut.uo_out.value.signed_integer
+            if signed
+            else self.dut.uo_out.value.integer
+        )
+        self.dut.uio_in.value = old_uio
+        return result
+
 
 @cocotb.test()
 async def test_basic_io(dut):
@@ -151,3 +172,44 @@ async def test_print_tinytapeout(dut):
 
     dut._log.info(f"Program output: {sic1.output.get_string()}")
     assert sic1.output.get_string() == "Hello, Tiny Tapeout!"
+
+
+@cocotb.test()
+async def test_debug_interface(dut):
+    sic1 = SIC1Driver(dut)
+    await sic1.reset()
+
+    assert await sic1.debug_read_reg(REG_PC) == 0
+
+    await sic1.write_mem(0x10, 0x25)
+    await sic1.write_mem(0x11, 0x26)
+    await sic1.write_mem(0x12, 0x13)
+    await sic1.write_mem(0x13, 0x25)
+    await sic1.write_mem(0x25, 0x42)
+    await sic1.write_mem(0x26, 0x47)
+    await sic1.set_pc(0x10)
+
+    assert await sic1.debug_read_reg(REG_PC) == 0x10
+    assert await sic1.debug_read_reg(REG_STATE) == 0
+    dut.uio_in.value = UIO_RUN
+    await ClockCycles(dut.clk, 1)
+    assert await sic1.debug_read_reg(REG_STATE) == 1
+    await ClockCycles(dut.clk, 1)
+    assert await sic1.debug_read_reg(REG_STATE) == 2
+    assert await sic1.debug_read_reg(REG_A) == 0x25
+    await ClockCycles(dut.clk, 1)
+    assert await sic1.debug_read_reg(REG_STATE) == 3
+    assert await sic1.debug_read_reg(REG_B) == 0x26
+    await ClockCycles(dut.clk, 1)
+    assert await sic1.debug_read_reg(REG_STATE) == 4
+    assert await sic1.debug_read_reg(REG_C) == 0x13
+    await ClockCycles(dut.clk, 1)
+    assert await sic1.debug_read_reg(REG_STATE) == 5
+    assert await sic1.debug_read_reg(REG_MEM_A) == 0x42
+    await ClockCycles(dut.clk, 1)
+    assert await sic1.debug_read_reg(REG_STATE) == 6
+    assert await sic1.debug_read_reg(REG_RESULT, True) == 0x42 - 0x47
+    dut.uio_in.value = UIO_RUN
+    await ClockCycles(dut.clk, 5)
+    assert await sic1.debug_read_reg(REG_STATE) == 5
+    assert await sic1.debug_read_reg(REG_MEM_A, True) == 0x42 - 0x47

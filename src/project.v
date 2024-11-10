@@ -7,7 +7,7 @@
 
 module tt_um_urish_sic1 (
     input  wire [7:0] ui_in,    // Dedicated inputs
-    output wire [7:0] uo_out,   // Dedicated outputs
+    output reg  [7:0] uo_out,   // Dedicated outputs
     input  wire [7:0] uio_in,   // IOs: Input path
     output wire [7:0] uio_out,  // IOs: Output path
     output wire [7:0] uio_oe,   // IOs: Enable path (active high: 0=input, 1=output)
@@ -30,6 +30,7 @@ module tt_um_urish_sic1 (
   reg mem_wr_en;
   reg [7:0] mem_data_in;
   wire [7:0] mem_data_out;
+  wire [7:0] prog_uo_out;
   reg prev_run;
 
   reg [7:0] A;
@@ -66,13 +67,14 @@ module tt_um_urish_sic1 (
       .data_in(mem_data_in),
       .data_out(mem_data_out),
       .ui_in(ui_in),
-      .uo_out(uo_out),
+      .uo_out(prog_uo_out),
       .out_strobe(out_strobe)
   );
 
   wire run = uio_in[0];
   wire set_pc = uio_in[2];
   wire set_data = uio_in[3];
+  wire [2:0] debug = uio_in[7:5];
 
   always @(posedge clk) begin
     if (~rst_n) begin
@@ -140,6 +142,19 @@ module tt_um_urish_sic1 (
         default: state <= STATE_HALT;
       endcase
     end
+  end
+
+  always @(*) begin
+    case (debug)
+      0: uo_out = prog_uo_out;
+      1: uo_out = PC;
+      2: uo_out = A;
+      3: uo_out = B;
+      4: uo_out = C;
+      5: uo_out = mem_A;
+      6: uo_out = mem_data_in;
+      7: uo_out = {5'b0, state};
+    endcase
   end
 
   // // List all unused inputs to prevent warnings

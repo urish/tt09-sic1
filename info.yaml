@@ -48,9 +48,9 @@ pinout:
   uio[2]: "set_pc"
   uio[3]: "load_data"
   uio[4]: "out_strobe"
-  uio[5]: ""
-  uio[6]: ""
-  uio[7]: ""
+  uio[5]: "dbg0"
+  uio[6]: "dbg1"
+  uio[7]: "dbg2"
 
 # Do not change!
 yaml_version: 6
