@@ -1,10 +1,11 @@
 # SPDX-FileCopyrightText: © 2024 Tiny Tapeout
 # SPDX-License-Identifier: Apache-2.0
 
+from typing import List
+
 import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import ClockCycles, RisingEdge, Timer
-from typing import List
 
 ADDR_IN = 253
 ADDR_OUT = 254
@@ -28,7 +29,7 @@ class OutputMonitor:
     def __init__(self, dut):
         self.dut = dut
         self.queue = []
-        self._monitor = cocotb.fork(self._run())
+        self._monitor = cocotb.start_soon(self._run())
 
     async def _run(self):
         while True:
@@ -49,6 +50,7 @@ class OutputMonitor:
 class SIC1Driver:
     def __init__(self, dut):
         self.dut = dut
+        dut.uio_in.value = 0
 
         # Set the clock period to 10 us (100 KHz)
         self.clock = Clock(dut.clk, 10, units="us")
@@ -96,10 +98,13 @@ class SIC1Driver:
         # An extra clock cycle for outputs to stablize:
         await ClockCycles(self.dut.clk, 1)
 
-    async def run(self):
+    async def run(self, limit=10000):
         self.dut.uio_in.value = UIO_RUN
         await ClockCycles(self.dut.clk, 1)
-        await RisingEdge(self.dut.halted)
+        for _ in range(limit):
+            await ClockCycles(self.dut.clk, 1)
+            if self.dut.halted.value:
+                break
         self.dut.uio_in.value = 0
         # An extra clock cycle for outputs to stablize:
         await ClockCycles(self.dut.clk, 1)
@@ -107,7 +112,7 @@ class SIC1Driver:
     async def debug_read_reg(self, register: int, signed=False):
         old_uio = self.dut.uio_in.value
         self.dut.uio_in.value = register << 5
-        await Timer(50, 'ns') # Wait for the value to be propagated
+        await Timer(50, "ns")  # Wait for the value to be propagated
         result = (
             self.dut.uo_out.value.signed_integer
             if signed
