@@ -89,7 +89,7 @@ The `state` signal is a 3-bit value that represents the current state of the com
 
 ## Programming the SIC-1
 
-You can use the [https://jaredkrinke.itch.io/sic-1](online SIC-1 app) to compile and simulate your SIC-1 programs. Click on "Run game" and then "Apply for the job", close the "Electronic mail" popup. Paste the code and click on "Compile" (on the bottom left). You'll see the compiled code in the "Memory" window on the right, and will be able to step through the code.
+You can use the [online SIC-1 app](https://jaredkrinke.itch.io/sic-1) to compile and simulate your SIC-1 programs. Click on "Run game" and then "Apply for the job", close the "Electronic mail" popup. Paste the code and click on "Compile" (on the bottom left). You'll see the compiled code in the "Memory" window on the right, and will be able to step through the code.
 
 To load a program and run a program, follow this sequence:
 
